@@ -1,12 +1,19 @@
 {
   "name": "eisei-quiz",
   "version": "0.0.0",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/tetsunosuke/eisei-quiz.git"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build"
   },
   "dependencies": {
-    "vue": "^3.0.4"
+    "axios": "^0.21.0",
+    "vue": "^3.0.4",
+    "vuex": "^4.0.0-rc.2"
   },
   "devDependencies": {
     "vite": "^1.0.0-rc.13",
