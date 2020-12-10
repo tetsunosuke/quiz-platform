@@ -1,12 +1,14 @@
 <template>
   <div class="container">
-    <h1>test</h1>
+    <h1>第二種衛生管理者過去問</h1>
+    <h2>{{result}}</h2>
     <div id="question">
-      {{question}}
+      <h2>{{question}}</h2>
       <ul>
-        <li v-for="item in alternatives">{{item}}</li>
+        <li @click="check" v-for="item in alternatives">{{item}}</li>
       </ul>
-      <p @click="next">次の問題へ</p>
+
+      <p v-if="question && hasNext" @click="next">次の問題へ</p>
     </div>
   </div>
 </template>
@@ -14,66 +16,95 @@
 <script>
 import axios from "axios";
 import { AxiosPromise } from "axios";
+import {shuffle} from "./Module";
 export default {
   name: 'Main',
   props: {
   },
   data() {
     return {
-      text: "",
-      json : {},
-      item: {}
+      result: "",
     }
   },
+  // ここをcomputedでやると思っていたけどどうするのが良いのだろうか
+  // ajaxが完了したらdataとして書き換えるのがスジっぽ？
   computed: {
+    hasNext: {
+      get() {
+        const state = this.$store.state;
+        console.log(Object.keys(state.json).length, state.count);
+        if (Object.keys(state.json).length === state.count + 1) {
+            return false;
+        }
+        
+        return true;
+      }
+    },
     question: {
       get() {
-        // 何問目かを示すパラメータがないとだめかな...
-        return this.item["問題"];
+        const state = this.$store.state;
+        if (Object.keys(state.json).length === 0) {
+          return null;
+        }
+        console.log(state.count, state.json);
+        const item = this.$store.state.json[this.$store.state.count];
+        return item["問題"];
+
       }
     },
     alternatives: {
       get() {
-        // TODO: 返す際にシャッフルして返す
-        return [
-          this.item["正解"],
-          this.item["不正解1"],
-          this.item["不正解2"],
-          this.item["不正解3"],
-          this.item["不正解4"]
-        ];
+        const state = this.$store.state;
+        if (Object.keys(state.json).length === 0) {
+          return null;
+        }
+
+        const item = this.$store.state.json[this.$store.state.count];
+        const arr =  [
+              item["正解"],
+              item["不正解1"],
+              item["不正解2"],
+              item["不正解3"],
+              item["不正解4"]
+            ];
+            return shuffle(arr);
       }
     },
+    correct: {
+      get() {
+        const state = this.$store.state;
+        if (Object.keys(state.json).length === 0) {
+          return "-";
+        }
+        const item = this.$store.state.json[this.$store.state.count];
+        return item["正解"];
+      }
+    }
   },
-  created: function() {
+  mounted() {
+    console.log("mounted");
       // 先にバックグラウンドで読み込んでおく
       // ここでVuexの出番かも
       const dataUrl = "https://script.google.com/macros/s/AKfycby31Zm2NXkOv_sM-PPmp3f2gENNJq5fKw2vMDsoIcFHqhfpgn02/exec";
       axios.get(dataUrl, {crossDomain: true}).then(response => {
-          this.text = response.data;
           // 一旦ストアに全部入れる(ランダム化してから突っ込むのが良いかも)
           this.$store.commit('saveJson', response.data);
-          console.log(this.$store.state.json, response.data[0], response.data[1]);
-
-
-          // ここから先はいらないかもしれない
-          // 取ってきた問題集を全部シャッフルして持っておく
-          const arr = response.data;
-          // テストのため１件取り出す
-          // 実際は後ほどstoreから取るように変更する
-          this.item = arr.shift(); 
+          console.info("axios get success");
       }).catch(response => {
           console.error(response)
       });
   },
-  mounted: function() {
-      // console.log("mounted");
-  },
   methods: {
       next() {
+          const state = this.$store.state;
           this.$store.commit('increment');
-          // これで切り替えを処理すればOK?
-          console.log(this.$store.state.count, this.$store.state.json[this.$store.state.count]);
+          this.result = "";
+      },
+      check(e) {
+        const result = (e.target.innerText === this.correct);
+        // このあとにスタイルで打消し線を引いても面白い
+        this.result = result ? "o": "x";
+
       }
   }
 }
