@@ -1,14 +1,23 @@
 <template>
   <div class="container">
     <h1>第二種衛生管理者過去問</h1>
-    <h2>{{result}}</h2>
-    <div id="question">
-      <h2>{{question}}</h2>
-      <ul>
-        <li @click="check" v-for="item in alternatives">{{item}}</li>
+    <div id="question" v-if="question">
+      <h2 class="alert alert-info" role="alert">{{question}}</h2>
+      <ul class="list-unstyled">
+        <li @click="check" v-for="item in alternatives">
+          <button class="btn btn-light">{{item}}</button>
+        </li>
       </ul>
-
-      <p v-if="question && hasNext" @click="next">次の問題へ</p>
+      <h3>{{result}}</h3>
+      <div v-if="result === 'x'" class="alert alert-light">
+        {{explanation}}
+      </div>
+      <p v-if="question && hasNext" @click="next">
+        <button class="btn btn-primary">次の問題へ</button>
+      </p>
+    </div>
+    <div v-else>
+      <p>問題を読み込んでいます</p>
     </div>
   </div>
 </template>
@@ -17,8 +26,11 @@
 import axios from "axios";
 import { AxiosPromise } from "axios";
 import {shuffle} from "./Module";
+import Navigation from "./Navigation.vue";
 export default {
   name: 'Main',
+  components: {
+  },
   props: {
   },
   data() {
@@ -52,6 +64,17 @@ export default {
 
       }
     },
+    explanation: {
+      get() {
+        const state = this.$store.state;
+        if (Object.keys(state.json).length === 0) {
+          return null;
+        }
+
+        const item = this.$store.state.json[this.$store.state.count];
+        return item["解説"];
+      }
+    },
     alternatives: {
       get() {
         const state = this.$store.state;
@@ -82,10 +105,8 @@ export default {
     }
   },
   mounted() {
-    console.log("mounted");
-      // 先にバックグラウンドで読み込んでおく
-      // ここでVuexの出番かも
       const dataUrl = "https://script.google.com/macros/s/AKfycby31Zm2NXkOv_sM-PPmp3f2gENNJq5fKw2vMDsoIcFHqhfpgn02/exec";
+      // TODO: キャッシュしているなら読みに行かないように？
       axios.get(dataUrl, {crossDomain: true}).then(response => {
           // 一旦ストアに全部入れる(ランダム化してから突っ込むのが良いかも)
           this.$store.commit('saveJson', response.data);
@@ -103,6 +124,7 @@ export default {
       check(e) {
         const result = (e.target.innerText === this.correct);
         // このあとにスタイルで打消し線を引いても面白い
+        // とりあえずは選んだものが正解かどうかとどれが正解でどれが不正解か出すのが良さげ
         this.result = result ? "o": "x";
 
       }

@@ -5,6 +5,8 @@ import App from './App.vue'
 import './index.css'
 
 
+// このままだと一度食わせたものがキャッシュされてしまうので
+// リセットする方法を検討しなくてはならない
 const store = createStore({
   state () {
     return {
