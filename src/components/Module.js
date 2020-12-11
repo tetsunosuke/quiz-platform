@@ -1,5 +1,4 @@
 export function shuffle(base) {
-    console.log(base);
     let array = [...base];
 
     for (let i = array.length; 1 < i; i--) {
