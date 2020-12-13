@@ -1,22 +1,23 @@
 <template>
-<div class="container">
-  <!--<Navigation />-->
+  <div class="container">
+    <!--<Navigation />-->
 
-  <Main />
-  <!--<Footer /> -->
+    <Main />
+    <!--<Footer /> -->
   </div>
 </template>
 
 <script>
-import Main from './components/Main.vue'
-import Navigation from './components/Navigation.vue'
-import Footer from './components/Footer.vue'
-
+import Main from "./components/Main.vue";
+import Navigation from "./components/Navigation.vue";
+import Footer from "./components/Footer.vue";
 
 export default {
-  name: 'App',
+  name: "App",
   components: {
-    Main,Navigation,Footer
-  }
-}
+    Main,
+    Navigation,
+    Footer,
+  },
+};
 </script>
