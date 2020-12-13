@@ -152,7 +152,7 @@ export default {
       .get(dataUrl, { crossDomain: true })
       .then((response) => {
         // 一旦ストアに全部入れる(ランダム化してから突っ込むのが良いかも)
-        this.$store.commit("saveJson", response.data);
+        this.$store.commit("saveJson", shuffle(response.data));
         console.info("axios get success");
       })
       .catch((response) => {
