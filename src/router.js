@@ -8,7 +8,8 @@ export const router = createRouter({
   history: createWebHistory(),
   routes: [
     // コロンで始まる動的セグメント
-    { path: "/", component: Main},
+    { path: "/", component: Main },
+    { path: "/:id", component: Main },
     { path: "/hoge", component: Hoge },
     { path: "/hoge/:id", component: Hoge },
   ],

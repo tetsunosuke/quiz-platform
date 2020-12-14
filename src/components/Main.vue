@@ -6,10 +6,11 @@
         <div class="list-group">
           <div
             class="list-group-item"
+            v-bind:class="resultStatus"
             v-for="item in alternatives"
-            @click="check"
+            v-bind:key="item.text"
           >
-            <button type="button" class="btn" v-if="result">
+            <button type="button" class="btn" v-if="result !== ''">
               <!-- o -->
               <svg
                 v-if="item.result"
@@ -50,7 +51,7 @@
                 />
               </svg>
             </button>
-            <span class="card-text">{{ item.text }}</span>
+            <span @click="check" class="card-text">{{ item.text }}</span>
           </div>
         </div>
 
@@ -74,7 +75,6 @@ import axios from "axios";
 import { AxiosPromise } from "axios";
 import { shuffle } from "./Module";
 import Navigation from "./Navigation.vue";
-window.__SKYWAY_KEY__ = "f4e8c608-6e6f-4e20-a536-967f19ab03f3";
 export default {
   name: "Main",
   components: {},
@@ -84,16 +84,23 @@ export default {
       result: "",
     };
   },
-  // ここをcomputedでやると思っていたけどどうするのが良いのだろうか
-  // ajaxが完了したらdataとして書き換えるのがスジっぽ？
   computed: {
+    resultStatus: function() {
+      const result = (this.result || this.result === "");
+      return {
+        // TODO: もうちょっときれいなクラスが良い...alert alert-dangerとかは配列で返す？
+        'bg-warning': !result,
+      }
+
+    },
     hasNext: {
       get() {
+        // TOOD: GETで渡した問題パラメータで読み取るように変更
+        // TODO: このへんで問題集のデータの長さと現在地を比較できる
         const state = this.$store.state;
         if (Object.keys(state.json).length === state.count + 1) {
           return false;
         }
-
         return true;
       },
     },
@@ -123,13 +130,15 @@ export default {
         }
 
         const item = this.getItem();
-        const arr = [
-          { result: true, text: item["正解"] },
-          { result: false, text: item["不正解1"] },
-          { result: false, text: item["不正解2"] },
-          { result: false, text: item["不正解3"] },
-          { result: false, text: item["不正解4"] },
-        ];
+        const arr = Object.keys(item).reduce((pv, cv) => {
+          if (cv.indexOf("不正解") === 0) {
+            pv.push({result: false, text: item[cv]});
+            return pv;
+          } else {
+            return pv;
+          }
+        }, []);
+        arr.push({result: true, text: item["正解"]});
         return shuffle(arr);
       },
     },
@@ -150,63 +159,50 @@ export default {
     axios
       .get(dataUrl, { crossDomain: true })
       .then((response) => {
-        // 一旦ストアに全部入れる(ランダム化してから突っ込むのが良いかも)
+        // 一旦ストアに全部入れる
         this.$store.commit("saveJson", shuffle(response.data));
         console.info("axios get success");
+        /*
+        // ダミーを返す
+        const dummy = [
+          {"正解": "00000", "問題": "xxxxxx", "不正解1": "xxxx", "不正解2": "YYYY"},
+          {"正解": "1111", "問題": "xxxxx2", "不正解1": "xxxx", "不正解2": "YYYY"}
+        ]
+        this.$store.commit("saveJson", dummy);
+        */
       })
       .catch((response) => {
+        // TODO: エラー処理
         console.error(response);
+        const dummy = [
+          {"正解": "00000", "問題": "xxxxxx", "不正解1": "xxxx", "不正解2": "YYYY"},
+          {"正解": "1111", "問題": "xxxxx2", "不正解1": "xxxx", "不正解2": "YYYY"}
+        ]
+        this.$store.commit("saveJson", dummy);
+
       });
 
-      // skywayを使う場合はこのへんを仕込んでおいて
-      // window.meshRoom.send() を用いてイベント発生
-      // 受け取ったイベントはdataを使ってフックする
-      /*
-      const peer = (window.peer = new Peer({
-        key: window.__SKYWAY_KEY__,
-        debug: 2,
-      }));
-      peer.once('open', (id) => {
-        console.log(`open id=${id}`);
-        const meshRoom = peer.joinRoom("eisei", {
-          mode: 'mesh',
-        });
-        window.meshRoom = meshRoom;
-        meshRoom.on('open', () => {console.log("room opened")});
-        meshRoom.on('peerJoin', (peerId) => {
-          console.log(`peerId: ${peerId} joined`);
-        })
-        meshRoom.on('data', (obj) => {
-          // 誰の発信で何を受け取ったかはこれでわかる
-          console.log(`src: ${obj.src}, data: ${obj.data}`);
-        })
-      });
-      peer.on('connection', dataConnection => {
-        console.log(`dataConnection ${dataConnection}`);
-      });
-      peer.on('error', console.error);
-      */
+
   },
   methods: {
     next() {
-      const state = this.$store.state;
+      // TODO: storeを頼らずにGETパラメータでどうにかする方法を検討する
       this.$store.commit("increment");
       this.result = "";
     },
     check(e) {
-      const selected = e.target.parentElement.parentElement.querySelector(
-        "span"
-      ).innerText;
-      const result = selected === this.correct;
-      // このあとにスタイルで打消し線を引いても面白い
-      // とりあえずは選んだものが正解かどうかとどれが正解でどれが不正解か出すのが良さげ
-      this.result = result ? "o" : "x";
+      const selected = e.target.innerText;
+      const result = (selected === this.correct);
+      // this.result = result ? "o" : "x";
+      this.result = result;
     },
     isQuestionLoaded() {
       const state = this.$store.state;
       return Object.keys(state.json).length === 0 ? false : true;
     },
     getItem() {
+      // this.$store.state.countの代わりに、$route.params.id を利用できないか検討する
+      // console.info(this.$route.params.id);
       return this.$store.state.json[this.$store.state.count];
     },
   },
