@@ -159,7 +159,6 @@ export default {
         console.error(response);
       });
 
-    /*
       // skywayを使う場合はこのへんを仕込んでおいて
       // window.meshRoom.send() を用いてイベント発生
       // 受け取ったイベントはdataを使ってフックする
@@ -186,7 +185,6 @@ export default {
         console.log(`dataConnection ${dataConnection}`);
       });
       peer.on('error', console.error);
-      */
   },
   methods: {
     next() {
