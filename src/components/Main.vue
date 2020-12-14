@@ -1,6 +1,5 @@
 <template>
   <div class="container">
-    <h1>第二種衛生管理者過去問</h1>
     <div id="question" v-if="question" class="card bg-light border-dark">
       <div class="card-body">
         <h2 class=".h5 mb card-title alert alert-info">{{ question }}</h2>
@@ -162,6 +161,7 @@ export default {
       // skywayを使う場合はこのへんを仕込んでおいて
       // window.meshRoom.send() を用いてイベント発生
       // 受け取ったイベントはdataを使ってフックする
+      /*
       const peer = (window.peer = new Peer({
         key: window.__SKYWAY_KEY__,
         debug: 2,
@@ -185,6 +185,7 @@ export default {
         console.log(`dataConnection ${dataConnection}`);
       });
       peer.on('error', console.error);
+      */
   },
   methods: {
     next() {
