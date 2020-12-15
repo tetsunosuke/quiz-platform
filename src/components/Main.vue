@@ -55,8 +55,11 @@
           </div>
         </div>
 
-        <div v-if="result === 'x' || result === 'o'" class="alert alert-light">
+        <div v-if="result !== ''" class="alert alert-light" style="white-space: pre-wrap;">
+          <h3>解説</h3>
+          <p>
           {{ explanation }}
+          </p>
         </div>
         <p v-if="question && hasNext" @click="next" class="card-footer">
           <button class="btn btn-primary">次の問題へ</button>
@@ -153,6 +156,7 @@ export default {
     },
   },
   mounted() {
+    // フィルタリングできたはずなので調べる
     const dataUrl =
       "https://script.google.com/macros/s/AKfycby31Zm2NXkOv_sM-PPmp3f2gENNJq5fKw2vMDsoIcFHqhfpgn02/exec";
     // TODO: キャッシュしているなら読みに行かないように？
