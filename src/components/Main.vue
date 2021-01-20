@@ -64,6 +64,7 @@
           <p>
             {{ explanation }}
           </p>
+          <p>出典： {{ from }} </p>
         </div>
         <p v-if="question && hasNext" @click="next" class="card-footer">
           <button class="btn btn-primary">次の問題へ</button>
@@ -132,6 +133,17 @@ export default {
         return item["解説"];
       },
     },
+    from: {
+      get() {
+        if (!this.isQuestionLoaded()) {
+          return null;
+        }
+
+        const item = this.getItem();
+        console.log(item);
+        return item["出典"];
+      }
+    },
     alternatives: {
       get() {
         if (!this.isQuestionLoaded()) {
@@ -173,7 +185,6 @@ export default {
     check(e) {
       const selected = e.target.innerText;
       const result = selected === this.correct;
-      // this.result = result ? "o" : "x";
       this.result = result;
     },
     isQuestionLoaded() {
@@ -181,11 +192,13 @@ export default {
       return Object.keys(state.json).length === 0 ? false : true;
     },
     getItem() {
-      // this.$store.state.countの代わりに、$route.params.id を利用できないか検討する
+      // TODO: this.$store.state.countの代わりに、this.$route.params.id を利用できないか検討する
       // console.info(this.$route.params.id);
       return this.$store.state.json[this.$store.state.count];
     },
     fetchData(category) {
+      // もし回答を選択していたらリセットする
+      this.result = "";
       let dataUrl = config.dataUrl + `?category=${category}`;
       console.info(`get ${dataUrl}`);
 

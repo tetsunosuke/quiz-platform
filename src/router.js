@@ -8,7 +8,7 @@ export const router = createRouter({
   routes: [
     // コロンで始まる動的セグメント
     { path: "/", component: Home},
-    { path: "/:id", component: Main },
     { path: "/category/:category", component: Main, name: 'category'},
+    { path: "/category/:category/max/:max", component: Main, name: 'category_max'},
   ],
 });

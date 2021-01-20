@@ -1,7 +1,6 @@
 import { createStore } from "vuex";
 
-// このままだと一度食わせたものがキャッシュされてしまうので
-// リセットする方法を検討しなくてはならない
+// TODO: キャッシュのリセットについては要確認
 export const store = createStore({
   state() {
     return {
@@ -14,6 +13,7 @@ export const store = createStore({
       state.count++;
     },
     saveJson(state, value) {
+      state.count = 0;
       state.json = value;
     },
   },
