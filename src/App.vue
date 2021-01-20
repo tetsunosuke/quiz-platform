@@ -3,8 +3,8 @@
   <!-- nav -->
     <Navigation />
   <!-- nav -->
-     <div class="container">
-      <router-view></router-view>
+    <div class="container">
+    <router-view></router-view>
     </div>
     <!--<Footer /> -->
   </div>

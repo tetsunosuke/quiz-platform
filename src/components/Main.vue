@@ -3,6 +3,7 @@
     <div id="question" v-if="question" class="card bg-light border-dark">
       <div class="card-body">
         <h2 class=".h5 mb card-title alert alert-info">{{ question }}</h2>
+        <p>現在正解の設定が正しくされていないのでご注意ください</p>
         <div class="list-group">
           <div
             class="list-group-item"
@@ -152,7 +153,7 @@ export default {
 
         const item = this.getItem();
         const arr = Object.keys(item).reduce((pv, cv) => {
-          if (cv.indexOf("不正解") === 0) {
+          if (cv.indexOf("不正解") === 0 && item[cv].length > 0) {
             pv.push({ result: false, text: item[cv] });
             return pv;
           } else {
