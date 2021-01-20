@@ -5,6 +5,7 @@ import App from './App.vue'
 import './index.css'
 import { store } from './store'
 import { router } from './router'
+import { config } from './config'
 
 const app = createApp(App);
 

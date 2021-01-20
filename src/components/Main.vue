@@ -55,10 +55,14 @@
           </div>
         </div>
 
-        <div v-if="result !== ''" class="alert alert-light" style="white-space: pre-wrap;">
+        <div
+          v-if="result !== ''"
+          class="alert alert-light"
+          style="white-space: pre-wrap"
+        >
           <h3>解説</h3>
           <p>
-          {{ explanation }}
+            {{ explanation }}
           </p>
         </div>
         <p v-if="question && hasNext" @click="next" class="card-footer">
@@ -78,6 +82,9 @@ import axios from "axios";
 import { AxiosPromise } from "axios";
 import { shuffle } from "./Module";
 import Navigation from "./Navigation.vue";
+import { config } from "../config.js";
+import { useRouter } from "vue-router";
+
 export default {
   name: "Main",
   components: {},
@@ -88,13 +95,12 @@ export default {
     };
   },
   computed: {
-    resultStatus: function() {
-      const result = (this.result || this.result === "");
+    resultStatus: function () {
+      const result = this.result || this.result === "";
       return {
         // TODO: もうちょっときれいなクラスが良い...alert alert-dangerとかは配列で返す？
-        'bg-warning': !result,
-      }
-
+        "bg-warning": !result,
+      };
     },
     hasNext: {
       get() {
@@ -135,13 +141,13 @@ export default {
         const item = this.getItem();
         const arr = Object.keys(item).reduce((pv, cv) => {
           if (cv.indexOf("不正解") === 0) {
-            pv.push({result: false, text: item[cv]});
+            pv.push({ result: false, text: item[cv] });
             return pv;
           } else {
             return pv;
           }
         }, []);
-        arr.push({result: true, text: item["正解"]});
+        arr.push({ result: true, text: item["正解"] });
         return shuffle(arr);
       },
     },
@@ -156,37 +162,7 @@ export default {
     },
   },
   mounted() {
-    // フィルタリングできたはずなので調べる
-    const dataUrl =
-      "https://script.google.com/macros/s/AKfycby31Zm2NXkOv_sM-PPmp3f2gENNJq5fKw2vMDsoIcFHqhfpgn02/exec";
-    // TODO: キャッシュしているなら読みに行かないように？
-    axios
-      .get(dataUrl, { crossDomain: true })
-      .then((response) => {
-        // 一旦ストアに全部入れる
-        this.$store.commit("saveJson", shuffle(response.data));
-        console.info("axios get success");
-        /*
-        // ダミーを返す
-        const dummy = [
-          {"正解": "00000", "問題": "xxxxxx", "不正解1": "xxxx", "不正解2": "YYYY"},
-          {"正解": "1111", "問題": "xxxxx2", "不正解1": "xxxx", "不正解2": "YYYY"}
-        ]
-        this.$store.commit("saveJson", dummy);
-        */
-      })
-      .catch((response) => {
-        // TODO: エラー処理
-        console.error(response);
-        const dummy = [
-          {"正解": "00000", "問題": "xxxxxx", "不正解1": "xxxx", "不正解2": "YYYY"},
-          {"正解": "1111", "問題": "xxxxx2", "不正解1": "xxxx", "不正解2": "YYYY"}
-        ]
-        this.$store.commit("saveJson", dummy);
-
-      });
-
-
+    // 何か必要かな？
   },
   methods: {
     next() {
@@ -196,7 +172,7 @@ export default {
     },
     check(e) {
       const selected = e.target.innerText;
-      const result = (selected === this.correct);
+      const result = selected === this.correct;
       // this.result = result ? "o" : "x";
       this.result = result;
     },
@@ -209,6 +185,59 @@ export default {
       // console.info(this.$route.params.id);
       return this.$store.state.json[this.$store.state.count];
     },
+    fetchData(category) {
+      let dataUrl = config.dataUrl + `?category=${category}`;
+      console.info(`get ${dataUrl}`);
+
+      // TODO: 開発環境だけ？
+      axios.defaults.baseURL = 'http://localhost:3000';
+      axios.defaults.headers.post['Content-Type'] = 'application/json;charset=utf-8';
+      axios.defaults.headers.post['Access-Control-Allow-Origin'] = '*';
+      axios
+        .get(dataUrl, { crossDomain: true })
+        .then((response) => {
+          // 一旦ストアに全部入れる
+            this.$store.commit("saveJson", shuffle(response.data));
+            console.info("axios get success");
+        })
+        .catch((response) => {
+          // TODO: エラー処理
+          console.error(response);
+          const dummy = [
+            {
+              正解: "00000",
+              問題: "xxxxxx",
+              不正解1: "xxxx",
+              不正解2: "YYYY",
+            },
+            {
+              正解: "1111",
+              問題: "xxxxx2",
+              不正解1: "xxxx",
+              不正解2: "YYYY",
+            },
+          ];
+          this.$store.commit("saveJson", dummy);
+        });
+    }
   },
+  created() {
+    // URLの変更を検知させて必要な問題集を取りに行くようにする
+    if (this.$route.params.category !== undefined) {
+      console.log("HomeからMainを呼んだ場合")
+      this.fetchData(this.$route.params.category);
+    }
+    // TODO: HomeからMainへ移った場合にはこのwatchが効かない
+    this.$watch(
+      () => this.$route.params,
+      (toParams, previousParams) => {
+        console.log("Main内でパラメータが変わった場合", "to", toParams, "prev", previousParams)
+        if (toParams.category !== undefined) {
+          this.fetchData(toParams.category);
+
+        }
+      }
+    )
+  }
 };
 </script>
