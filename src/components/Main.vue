@@ -3,7 +3,7 @@
     <div id="question" v-if="question" class="card bg-light border-dark">
       <div class="card-body">
         <h2 class=".h5 mb card-title alert alert-info">{{ question }}</h2>
-        <p>現在正解の設定が正しくされていないのでご注意ください</p>
+        <p>問題ID:{{ item.問題ID }}</p>
         <div class="list-group">
           <div
             class="list-group-item"
@@ -71,6 +71,7 @@
           <button class="btn btn-primary">次の問題へ</button>
         </p>
       </div>
+      <div class="card-footer">問題に間違い等があった場合は問題IDを報告してください。現段階では必要な図がないなどの問題がわかっています</div>
     </div>
     <div v-else>
       <p>問題を読み込んでいます</p>
@@ -114,6 +115,14 @@ export default {
         }
         return true;
       },
+    },
+    item: {
+        get() {
+            if (!this.isQuestionLoaded()) {
+                return null;
+            }
+            return this.getItem();
+        }
     },
     question: {
       get() {
