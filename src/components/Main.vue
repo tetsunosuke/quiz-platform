@@ -63,7 +63,7 @@
         >
           <h3>解説</h3>
           <p>
-            {{ explanation }}
+            {{ item.解説コメント}} <a v-bind:href="item.解説リンク"  target="_blank" rel="noopener noreferrer">解説リンク（新しく開きます）</a>
           </p>
           <p>出典： {{ from }} </p>
         </div>
@@ -87,6 +87,8 @@ import { shuffle } from "./Module";
 import Navigation from "./Navigation.vue";
 import { config } from "../config.js";
 import { useRouter } from "vue-router";
+import queryString from 'query-string'
+
 
 export default {
   name: "Main",
@@ -206,7 +208,7 @@ export default {
       // console.info(this.$route.params.id);
       return this.$store.state.json[this.$store.state.count];
     },
-    fetchData(category) {
+    fetchData(category, shouldShuffle) {
       // もし回答を選択していたらリセットする
       this.result = "";
       let dataUrl = config.dataUrl + `?category=${category}`;
@@ -220,7 +222,11 @@ export default {
         .get(dataUrl, { crossDomain: true })
         .then((response) => {
           // 一旦ストアに全部入れる
-            this.$store.commit("saveJson", shuffle(response.data));
+            if (shouldShuffle) {
+              this.$store.commit("saveJson", shuffle(response.data));
+            } else {
+              this.$store.commit("saveJson", response.data);
+            }
             console.info("axios get success");
         })
         .catch((response) => {
@@ -245,18 +251,21 @@ export default {
     }
   },
   created() {
+    const query = queryString.parse(location.search) //② クエリストリングをオブジェクトへ変換
+    const shouldShuffle = (query.shuffle === "false" ? false: true);
+
     // URLの変更を検知させて必要な問題集を取りに行くようにする
     if (this.$route.params.category !== undefined) {
-      console.log("HomeからMainを呼んだ場合")
-      this.fetchData(this.$route.params.category);
+      console.log("HomeからMainを呼んだ場合", this.$route.params.category, shouldShuffle);
+      this.fetchData(this.$route.params.category, shouldShuffle);
     }
-    // TODO: HomeからMainへ移った場合にはこのwatchが効かない
+    // パラメータ変更を検知して問題を入れ替える
     this.$watch(
       () => this.$route.params,
       (toParams, previousParams) => {
-        console.log("Main内でパラメータが変わった場合", "to", toParams, "prev", previousParams)
+        console.log("Main内でパラメータが変わった場合", "to", toParams, "prev", previousParams, shouldShuffle)
         if (toParams.category !== undefined) {
-          this.fetchData(toParams.category);
+          this.fetchData(toParams.category, shouldShuffle);
 
         }
       }

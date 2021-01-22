@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "axios": "^0.21.0",
+    "query-string": "^6.13.8",
     "vue": "^3.0.4",
     "vue-router": "^4.0.1",
     "vuex": "^4.0.0-rc.2"
